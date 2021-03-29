@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SmartSchool2.API.Data;
 using SmartSchool2.API.Models;
 using System;
 using System.Collections;
@@ -13,6 +15,14 @@ namespace SmartSchool2.API.Controllers
     [ApiController]
     public class AlunoController : ControllerBase
     {
+        private readonly SmartContext _context;
+
+        public AlunoController(SmartContext context) 
+        {
+            _context = context;
+        }
+
+        /*
         public List<Aluno> Alunos = new List<Aluno>()
         {   new Aluno{
                 Id = 1,
@@ -39,19 +49,20 @@ namespace SmartSchool2.API.Controllers
                 Telefone = "11223344"
             }
         };
+        */
 
         [HttpGet]
         public IActionResult Get()
         {
             //return Ok("Alunos: Denis, Vera, Isabella, Denis Filho");
-            return Ok(Alunos);
+            return Ok(_context.Alunos);
         }
 
         //[HttpGet("{id:int}")] //http://localhost:37530/api/aluno/2
         [HttpGet("byId")] //http://localhost:37530/api/aluno/byId?id=4
         public IActionResult GetById(int id)
         {
-            var aluno = Alunos.Where(a => a.Id == id).FirstOrDefault();
+            var aluno = _context.Alunos.Where(a => a.Id == id).FirstOrDefault();
 
             if (aluno == null) return BadRequest("Aluno não encontrado.");
 
@@ -61,7 +72,7 @@ namespace SmartSchool2.API.Controllers
         [HttpGet("{nome}")]  //http://localhost:37530/api/aluno/Denis
         public IActionResult GetByNome(string nome)
         {
-            var aluno = Alunos.Where(a => a.Nome.Contains(nome)).FirstOrDefault();
+            var aluno = _context.Alunos.Where(a => a.Nome.Contains(nome)).FirstOrDefault();
 
             if (aluno == null) return BadRequest("Aluno não encontrado.");
 
@@ -71,7 +82,7 @@ namespace SmartSchool2.API.Controllers
         [HttpGet("byName")] //http://localhost:37530/api/aluno/byName?nome=Denis&sobrenome=Ribeiro
         public IActionResult GetByName(string nome, string sobrenome)
         {
-            var aluno = Alunos.Where(a => a.Nome.Contains(nome)  && a.SobreNome.Contains(sobrenome)).FirstOrDefault();
+            var aluno = _context.Alunos.Where(a => a.Nome.Contains(nome)  && a.SobreNome.Contains(sobrenome)).FirstOrDefault();
 
             if (aluno == null) return BadRequest("Aluno não encontrado.");
 
@@ -82,6 +93,9 @@ namespace SmartSchool2.API.Controllers
         public IActionResult Post(Aluno aluno)
         {
             //return Ok("Alunos: Denis, Vera, Isabella, Denis Filho");
+            _context.Add(aluno);
+            _context.SaveChanges();
+
             return Ok(aluno);
         }
 
@@ -89,6 +103,13 @@ namespace SmartSchool2.API.Controllers
         public IActionResult Put(int id, Aluno aluno)
         {
             //return Ok("Alunos: Denis, Vera, Isabella, Denis Filho");
+            var alu = _context.Alunos.Where(x => x.Id == id).AsNoTracking().FirstOrDefault();
+
+            if (alu == null) return BadRequest("Aluno não encontrado.");
+
+            _context.Update(aluno);
+            _context.SaveChanges();
+
             return Ok(aluno);
         }
 
@@ -96,6 +117,14 @@ namespace SmartSchool2.API.Controllers
         public IActionResult Patch(int id, Aluno aluno)
         {
             //return Ok("Alunos: Denis, Vera, Isabella, Denis Filho");
+
+            var alu = _context.Alunos.Where(x => x.Id == id).AsNoTracking().FirstOrDefault();
+
+            if (alu == null) return BadRequest("Aluno não encontrado.");
+
+            _context.Update(aluno);
+            _context.SaveChanges();
+
             return Ok(aluno);
         }
 
@@ -103,6 +132,13 @@ namespace SmartSchool2.API.Controllers
         public IActionResult Delete(int id)
         {
             //return Ok("Alunos: Denis, Vera, Isabella, Denis Filho");
+            var aluno = _context.Alunos.Where(x => x.Id == id).FirstOrDefault();
+
+            if (aluno == null) return BadRequest("Aluno não encontrado.");
+
+            _context.Remove(aluno);
+            _context.SaveChanges();
+
             return Ok();
         }
 
